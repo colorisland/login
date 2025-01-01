@@ -24,6 +24,7 @@ public class MemberController {
         return "members/addMemberForm";
     }
 
+    // 회원가입
     @PostMapping("add")
     public String save(@Validated @ModelAttribute("member") Member member, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
