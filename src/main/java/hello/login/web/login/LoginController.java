@@ -17,6 +17,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -30,7 +31,36 @@ public class LoginController {
         return "login/loginForm";
     }
 
+    // 비로그인 사용자가 로그인 창으로 리다이렉트했다가 로그인 완료하고 나서 원래 접근하려했던 페이지로 다시 리다이렉트되는 코드.
     @PostMapping("/login")
+    public String loginV4(@Validated @ModelAttribute("loginForm") LoginForm loginForm
+            , BindingResult bindingResult
+            , @RequestParam(name = "redirectURL", defaultValue = "/") String redirectURL
+            , HttpServletRequest request) {
+        if (bindingResult.hasErrors()) {
+            return "login/loginForm";
+        }
+
+        // 로그인 결과.
+        Member loginMember = loginService.login(loginForm.getLoginId(), loginForm.getPassword());
+
+        if (loginMember == null) {
+            bindingResult.reject("loginFail", "아이디 또는 비밀번호가 맞지 않습니다.");
+            return "login/loginForm";
+        }
+
+        // 로그인 성공 처리.
+        // 세션이 있으면 있는 세션을 반환하고 없으면 신규 세션 반환.
+        HttpSession session = request.getSession();
+        // 세션에 로그인 회원 정보 보관.
+        // 이 과정에서 UUID를 내부에서 알아서 생성하고 response에 넣어주는 작업을 하나보다..
+        session.setAttribute(SessionConst.LOGIN_MEMBER,loginMember);
+
+        // 로그인 성공 시 홈으로 리다이렉트.
+        return "redirect:"+redirectURL;
+    }
+
+//    @PostMapping("/login")
     public String loginV3(@Validated @ModelAttribute("loginForm") LoginForm loginForm
             , BindingResult bindingResult
             , HttpServletRequest request) {
