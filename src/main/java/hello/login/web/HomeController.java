@@ -2,6 +2,7 @@ package hello.login.web;
 
 import hello.login.domain.member.Member;
 import hello.login.domain.member.MemberRepository;
+import hello.login.web.ArgumentResolver.Login;
 import hello.login.web.session.SessionManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -27,7 +28,23 @@ public class HomeController {
 //        return "home";
 //    }
 
+    // ArgumentResolver 를 통해서 로그인 회원인지 더 쉽게 판별할 수 있다.
     @GetMapping("/")
+    public String homeLoginV3ArgumentResolver(@Login Member loginMember, Model model) {
+
+        // SessionAttribute 라는 이름에서 알 수 있듯이, 세션조회 + LOGIN_MEMBER 항목 조회 기능을 합쳐서 Member 객체를 반환한다.
+        // 존재하는 회원인지 조회.
+        if (loginMember == null) {
+            return "home";
+        }
+
+        // 세션이 유지되면 로그인홈으로 이동.
+        model.addAttribute("member", loginMember);
+        return "loginHome";
+    }
+
+    // SessionAttribute 사용
+//    @GetMapping("/")
     public String homeLoginV3Spring(@SessionAttribute(name = SessionConst.LOGIN_MEMBER,required = false) Member loginMember, Model model) {
 
         // SessionAttribute 라는 이름에서 알 수 있듯이, 세션조회 + LOGIN_MEMBER 항목 조회 기능을 합쳐서 Member 객체를 반환한다.
